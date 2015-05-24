@@ -21,7 +21,7 @@ class Door43_Syntax_Plugin extends DokuWiki_Syntax_Plugin {
     protected $templateFileName;
 
     /**
-     * @param string $tagName
+     * @param string $tagName Case-insensitive tag name
      * @param string $templateFileName Usually a HTML file
      */
     function __construct($tagName, $templateFileName) {
@@ -84,9 +84,9 @@ class Door43_Syntax_Plugin extends DokuWiki_Syntax_Plugin {
         // footnote
         // quote
 
-        $this->Lexer->addSpecialPattern($this->specialMatch, $mode, $this->newMode);
-        $this->Lexer->addEntryPattern($this->entryMatch, $mode, $this->newMode);
-        $this->Lexer->addExitPattern($this->exitMatch, $this->newMode);
+        $this->Lexer->addSpecialPattern(strtolower($this->specialMatch), $mode, $this->newMode);
+        $this->Lexer->addEntryPattern(strtolower($this->entryMatch), $mode, $this->newMode);
+        $this->Lexer->addExitPattern(strtolower($this->exitMatch), $this->newMode);
     }
 
     /**
@@ -126,7 +126,7 @@ class Door43_Syntax_Plugin extends DokuWiki_Syntax_Plugin {
     protected function needToRender($match) {
 
         // We don't need to do anything if the match was the "Entry" or "Exit" tag.
-        if (preg_match('/(' . $this->entryMatch . '|' . str_replace('/', '\/', $this->exitMatch) . ')/', $match))
+        if (preg_match('/(' . $this->entryMatch . '|' . str_replace('/', '\/', $this->exitMatch) . ')/', strtolower($match)))
             return false;
 
         // We do want to handle the "special" tag and any "un-matched" text
@@ -153,11 +153,16 @@ class Door43_Syntax_Plugin extends DokuWiki_Syntax_Plugin {
      * @return mixed
      */
     protected function translateHtml($html) {
-        return preg_replace_callback('/@(.+)@/',
-            function($matches) {
-                $text = $this->getLang($matches[1]);
-                return (empty($text)) ? $matches[0] : $text;
-            },
-            $html);
+
+        /* @var $door43shared helper_plugin_door43shared */
+        global $door43shared;
+
+        // $door43shared is a global instance, and can be used by any of the door43 plugins
+        if (empty($door43shared)) {
+            $door43shared = plugin_load('helper', 'door43shared');
+        }
+
+        if (!$this->localised) $this->setupLocale();
+        return $door43shared->translateHtml($html, $this->lang);
     }
 }
