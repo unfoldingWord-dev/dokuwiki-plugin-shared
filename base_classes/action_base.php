@@ -14,6 +14,18 @@ if(!defined('DOKU_INC')) die();
 
 class Door43_Action_Plugin extends DokuWiki_Action_Plugin {
 
+    protected $root;
+
+    function __construct() {
+
+        // get the plugin root dir
+        $ref = new ReflectionClass($this);
+        $this->root = dirname($ref->getFileName());
+        $pos = strpos($this->root, DS . 'action');
+        if ($pos !== false) {
+            $this->root = substr($this->root, 0, $pos);
+        }
+    }
 
     /**
      * Strings that need translated are delimited by @ symbols. The text between the symbols is the key in lang.php.

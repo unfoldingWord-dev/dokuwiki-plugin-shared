@@ -56,4 +56,13 @@ class helper_plugin_door43shared extends DokuWiki_Plugin {
                 return (empty($text)) ? $matches[0] : $text;
             }, $temp);
     }
+
+    public function delete_directory_and_files($dir) {
+        foreach(scandir($dir) as $file) {
+            if ('.' === $file || '..' === $file) continue;
+            if (is_dir("$dir/$file")) $this->delete_directory_and_files("$dir/$file");
+            else unlink("$dir/$file");
+        }
+        rmdir($dir);
+    }
 }
